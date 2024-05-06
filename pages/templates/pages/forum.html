@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Форум</h2>
+    {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}">Выйти</a>
+        <form action="{% url 'forum' %}" method="post">
+            {% csrf_token %}
+            <textarea name="content" cols="50" rows="5"></textarea><br>
+            <button type="submit">Опубликовать</button>
+        </form>
+        <hr>
+    {% else %}
+        <p>Please <a href="{% url 'login' %}">login</a> to view and post in the forum.</p>
+    {% endif %}
+    {% for post in posts %}
+        <div>
+            <p>{{ post.user.username }} </p>
+            <p>{{ post.content }}</p>
+            <button class="like-btn" data-post-id="{{ post.id }}">Like</button>
+            <span id="like-count-{{ post.id }}">Likes: {{ post.like_count }}</span>
+            <button class="dislike-btn" data-post-id="{{ post.id }}">Dislike</button>
+            <span id="dislike-count-{{ post.id }}">Dislikes: {{ post.dislike_count }}</span>
+            <button class="reply-btn" data-post-id="{{ post.id }}">Reply</button>
+            <div id="reply-form-{{ post.id }}" style="display: none;">
+                <form action="{% url 'forum' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent_post_id" value="{{ post.id }}">
+                    <textarea name="content" cols="50" rows="3"></textarea><br>
+                    <button type="submit">Reply</button>
+                </form>
+            </div>
+            <hr>
+            {% for reply in post.replies.all %}
+                <div style="margin-left: 20px;">
+                    <p>{{ reply.user.username }} - {{ reply.content }}</p>
+                    <button class="like-btn" data-post-id="{{ reply.id }}">Like</button>
+                    <span id="like-count-{{ reply.id }}">Likes: {{ reply.like_count }}</span>
+                    <button class="dislike-btn" data-post-id="{{ reply.id }}">Dislike</button>
+                    <span id="dislike-count-{{ reply.id }}">Dislikes: {{ reply.dislike_count }}</span>
+                    <button class="reply-btn" data-post-id="{{ reply.id }}">Ответ</button>
+                    <div id="reply-form-{{ reply.id }}" style="display: none;">
+                        <form action="{% url 'forum' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="parent_post_id" value="{{ reply.id }}">
+                            <textarea name="content" cols="50" rows="3"></textarea><br>
+                            <button type="submit">Ответ</button>
+                        </form>
+                    </div>
+                    <hr>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <script>
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const postId = button.dataset.postId;
+                fetch(`/like/${postId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById(`like-count-${postId}`).innerText = `Likes: ${data.like_count}`;
+                        document.getElementById(`dislike-count-${postId}`).innerText = `Dislikes: ${data.dislike_count}`;
+                    });
+            });
+        });
+
+        document.querySelectorAll('.dislike-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const postId = button.dataset.postId;
+                fetch(`/dislike/${postId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById(`dislike-count-${postId}`).innerText = `Dislikes: ${data.dislike_count}`;
+                        document.getElementById(`like-count-${postId}`).innerText = `Likes: ${data.like_count}`;
+                    });
+            });
+        });
+    </script>
+{% endblock %}

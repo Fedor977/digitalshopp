@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Карточка покупки</h2>
+{% if cart_items %}
+<div class="table-responsive">
+    <table class="table" style="color: #fff;">
+        <thead>
+            <tr>
+                <th scope="col" class="white-text">Продукт</th>
+                <th scope="col" class="white-text">Количество</th>
+                <th scope="col" class="white-text">Цена</th>
+                <th scope="col" class="white-text">Итоговая стоимость</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr >
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.product.price }}</td>
+                <td>${{ total_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>Сумма: ${{ total_price }}</p>
+</div>
+{% else %}
+<p>Ваша корзина</p>
+{% endif %}
+<a href="{% url 'index' %}" class="btn btn-primary">Продолжить шопинг</a>
+{% endblock %}

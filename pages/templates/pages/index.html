@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container d-flex">
+    <div class="col-3">
+        <div class="list-group">
+            <h2>Категории</h2>
+            {% for category in categories %}
+            <a href="{% url 'category' category.id %}" class="list-group-item list-group-item-action"
+               aria-current="true">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for product in products %}
+            <div class="col">
+                <div class="card" style="width: 18rem; background: #6d67a1;">
+                    {% if product.photo %}
+                    <img src="{{ product.photo.url }}" class="card-img-top" alt="...">
+                    {% else %}
+                    <img src="https://cotton-store.ru/wa-data/public/shop/themes/profitbuy/img/nofoto.jpg"
+                         class="card-img-top"
+                         alt="...">
+                    {% endif %}
+                    <div class="card-body">
+                        <a class="card-title" href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                        <p class="card-text">${{ product.price }}</p>
+                        <form action="{% url 'add_to_cart' product.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">Добавить в корзину</button>
+                        </form>
+                        <a type="button" class="btn btn-outline-info" href="{% url 'product_detail' product.id %}">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- Меню с категориями -->
+
+

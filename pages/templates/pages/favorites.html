@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Избранное</h2>
+{% if favorites %}
+    {% for favorite in favorites %}
+        <div class="product-card" >
+            <img src="{{ favorite.photo.url }}" class="card-img-top" alt="{{ favorite.name }}">
+            <p><strong>Название:</strong> {{ favorite.name }}</p>
+            <p><strong>Цена:</strong> {{ favorite.price }}</p>
+            <p><strong>Описание:</strong> {{ favorite.description }}</p>
+            <form action="{% url 'remove_from_favorites' favorite.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Удалить из избранного</button>
+            </form>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>В вашем избранном нет продуктов</p>
+{% endif %}
+{% endblock %}
