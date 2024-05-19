@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-dark text-white p-3">
+            <div class="dropdown">
+                <h2>Категории</h2>
+                <ul class="nav flex-column">
+                    {% for category in categories %}
+                    <li class="nav-item">
+                        <a href="{% url 'category' category.id %}" class="nav-link text-white">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9 p-3">
+            <!-- Carousel -->
+            <div id="carouselExampleSlidesOnly" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for item in carusel_items %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" class="d-block w-100" alt="{{ item.title }}">
+                        {% else %}
+                        <img src="https://via.placeholder.com/800x400?text=No+Image" class="d-block w-100"
+                             alt="No Image">
+                        {% endif %}
+                        <div class="carousel-caption d-none d-md-block">
+                            {% if item.title %}
+                            <h5>{{ item.title }}</h5>
+                            {% endif %}
+                            {% if item.description %}
+                            <p>{{ item.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+                <div style="text-align: center;">
+                    <em>
+                        Наш магазин представляет собой уникальное пространство, где сливаются лучшие аспекты традиционного ритейла и передовых интернет-технологий. Мы обеспечиваем нашим клиентам услуги, выбор и инновации во всех аспектах их онлайн-покупок. Что делает нас особенными? Мы предлагаем не только широкий качественный ассортимент товаров, но и интеллектуальные решения, упрощающие процесс поиска, выбора и покупки. Наше инновационное использование искусственного интеллекта и аналитики помогает нашим клиентам предоставлять персонализированные рекомендации, адаптированные к их предпочтениям и потребностям.
+                        <br><br>
+                    </em>
+                </div>
+
+
+                <!-- Card Gallery -->
+                <div class="card-group">
+                    {% for item in gallery %}
+                    <div class="card mb-3" style="background-color: #6d67a1;">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" class="card-img-top" alt="...">
+                        {% else %}
+                        <img src="https://via.placeholder.com/800x400?text=No+Image" class="card-img-top"
+                             alt="No Image">
+                        {% endif %}
+                        <div class="card-body text-center">
+                            {% if item.title %}
+                            <h5 class="card-title">{{ item.title }}</h5>
+                            {% endif %}
+                            {% if item.description %}
+                            <p class="card-text">{{ item.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

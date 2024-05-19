@@ -1,46 +1,135 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container d-flex">
-    <div class="col-3">
-        <div class="list-group">
-            <h2>Категории</h2>
-            {% for category in categories %}
-            <a href="{% url 'category' category.id %}" class="list-group-item list-group-item-action"
-               aria-current="true">
-                {{ category.name }}
-            </a>
-            {% endfor %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Page</title>
+    <style>
+        body {
+            background-color: #000; /* Черный фон для всей страницы */
+            color: #fff; /* Белый цвет для текста */
+        }
+        .card {
+            background-color: #6d67a1; /* Фон карточки продукта */
+        }
+        .card-title, .card-text, .card-price {
+            color: #fff; /* Белый цвет для текста внутри карточки */
+        }
+        .card-price {
+            font-size: 1.5rem; /* Увеличенный размер шрифта для цены */
+            color: #fff;
+        }
+        .nav-link.text-white {
+            color: #fff !important; /* Белый цвет для ссылок в навигации */
+        }
+        .nav-link.text-white:hover {
+            color: #ddd !important; /* Светло-серый цвет при наведении для ссылок в навигации */
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-dark text-white p-3">
+            <div class="dropdown">
+                <h2>Категории</h2>
+                <ul class="nav flex-column">
+                    {% for category in categories %}
+                    <li class="nav-item">
+                        <a href="{% url 'category' category.id %}" class="nav-link text-white">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-    </div>
-    <div class="col-6">
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            {% for product in products %}
-            <div class="col">
-                <div class="card" style="width: 18rem; background: #6d67a1;">
-                    {% if product.photo %}
-                    <img src="{{ product.photo.url }}" class="card-img-top" alt="...">
-                    {% else %}
-                    <img src="https://cotton-store.ru/wa-data/public/shop/themes/profitbuy/img/nofoto.jpg"
-                         class="card-img-top"
-                         alt="...">
-                    {% endif %}
-                    <div class="card-body">
-                        <a class="card-title" href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
-                        <p class="card-text">${{ product.price }}</p>
-                        <form action="{% url 'add_to_cart' product.id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-secondary">Добавить в корзину</button>
-                        </form>
-                        <a type="button" class="btn btn-outline-info" href="{% url 'product_detail' product.id %}">Подробнее</a>
+
+        <!-- Main content -->
+        <div class="col-md-9 p-3">
+            <!-- Carousel -->
+            <div id="carouselExampleSlidesOnly" class="carousel slide mb-4" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for item in carusel_items %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" class="d-block w-100" alt="{{ item.title }}">
+                        {% else %}
+                        <img src="https://via.placeholder.com/800x400?text=No+Image" class="d-block w-100"
+                             alt="No Image">
+                        {% endif %}
+                        <div class="carousel-caption d-none d-md-block">
+                            {% if item.title %}
+                            <h5>{{ item.title }}</h5>
+                            {% endif %}
+                            {% if item.description %}
+                            <p>{{ item.description }}</p>
+                            {% endif %}
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
+            <h1>{{ category.name }}</h1>
+            <div class="row">
+                {% for product in page_obj %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        {% if product.photo %}
+                        <img src="{{ product.photo.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="https://cotton-store.ru/wa-data/public/shop/themes/profitbuy/img/nofoto.jpg"
+                             class="card-img-top" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-price" style=" white"><small class="text-light">{{ product.price }}
+                                $.</small></p>
+                            <form action="{% url 'add_to_cart' product.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary">Добавить в корзину</button>
+                            </form>
+                            <a type="button" class="btn btn-outline-info"
+                               href="{% url 'product_detail' product.id %}">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Пагинация -->
+<div class="mt-4 d-flex justify-content-center">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item{% if page_obj.number == num %} active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
 {% endblock %}
-<!-- Меню с категориями -->
-
-

@@ -1,81 +1,188 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>Форум</h2>
-    {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">Выйти</a>
-        <form action="{% url 'forum' %}" method="post">
-            {% csrf_token %}
-            <textarea name="content" cols="50" rows="5"></textarea><br>
-            <button type="submit">Опубликовать</button>
-        </form>
-        <hr>
-    {% else %}
-        <p>Please <a href="{% url 'login' %}">login</a> to view and post in the forum.</p>
-    {% endif %}
-    {% for post in posts %}
-        <div>
-            <p>{{ post.user.username }} </p>
-            <p>{{ post.content }}</p>
-            <button class="like-btn" data-post-id="{{ post.id }}">Like</button>
-            <span id="like-count-{{ post.id }}">Likes: {{ post.like_count }}</span>
-            <button class="dislike-btn" data-post-id="{{ post.id }}">Dislike</button>
-            <span id="dislike-count-{{ post.id }}">Dislikes: {{ post.dislike_count }}</span>
-            <button class="reply-btn" data-post-id="{{ post.id }}">Reply</button>
-            <div id="reply-form-{{ post.id }}" style="display: none;">
-                <form action="{% url 'forum' %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="parent_post_id" value="{{ post.id }}">
-                    <textarea name="content" cols="50" rows="3"></textarea><br>
-                    <button type="submit">Reply</button>
-                </form>
-            </div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Форум</h2>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}">Выйти</a>
+            <form action="{% url 'forum' %}" method="post">
+                {% csrf_token %}
+                <textarea name="content" cols="50" rows="5" style="font-size: 16px;"></textarea><br>
+                <button type="submit">Опубликовать</button>
+            </form>
             <hr>
-            {% for reply in post.replies.all %}
-                <div style="margin-left: 20px;">
-                    <p>{{ reply.user.username }} - {{ reply.content }}</p>
-                    <button class="like-btn" data-post-id="{{ reply.id }}">Like</button>
-                    <span id="like-count-{{ reply.id }}">Likes: {{ reply.like_count }}</span>
-                    <button class="dislike-btn" data-post-id="{{ reply.id }}">Dislike</button>
-                    <span id="dislike-count-{{ reply.id }}">Dislikes: {{ reply.dislike_count }}</span>
-                    <button class="reply-btn" data-post-id="{{ reply.id }}">Ответ</button>
-                    <div id="reply-form-{{ reply.id }}" style="display: none;">
-                        <form action="{% url 'forum' %}" method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="parent_post_id" value="{{ reply.id }}">
-                            <textarea name="content" cols="50" rows="3"></textarea><br>
-                            <button type="submit">Ответ</button>
-                        </form>
-                    </div>
-                    <hr>
+            {% else %}
+            <p>Please <a href="{% url 'login' %}">login</a> to view and post in the forum.</p>
+            {% endif %}
+
+            {% for post in posts %}
+            <div>
+                <p><strong></strong> <span style="color: blue; font-weight: bold;">{{ post.user.username }}</span> <span
+                        style="font-size: 18px;">{{ post.content }}</span></p>
+                <p><strong>Время создания: </strong>{{ post.created_at }}</p>
+
+                <form action="{% url 'like_post' post.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="border: none; background: none; padding: 0; color: white;">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="cursor: pointer;">
+                            <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                        </svg>
+                    </button>
+                    <span>{{ post.like_count }}</span>
+                </form>
+
+                <form action="{% url 'dislike_post' post.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="border: none; background: none; padding: 0; color: white;">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="cursor: pointer;">
+                            <path d="M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.995 2.614 1.707.635.71 1.064 1.475 1.238 1.979.243.7.407 1.768.482 2.85.025.362.36.594.667.518l.262-.065c.16-.04.258-.143.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.014a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.3.57-.65.107-.308.087-.67-.266-1.023L12.146 6l.353-.354c.043-.043.105-.14.154-.314.048-.168.075-.37.075-.582s-.027-.415-.075-.582c-.05-.174-.111-.272-.154-.315L12.5 3.44 12.853 3c.047-.048.109-.177.005-.488a2.2 2.2 0 0 0-.505-.805L11.5 1.7c-.064-.064-.073-.118-.121-.169a.9.9 0 0 0-.416-.121c-.288.006-.56-.165-.928-.55a.674.674 0 0 0-.154-.071z"/>
+                        </svg>
+                    </button>
+                    <span>{{ post.dislike_count }}</span>
+                </form>
+
+
+                {% if user.is_authenticated %}
+                <form action="{% url 'delete_post' post.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="border: none; background: none; padding: 0; color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-trash3" viewBox="0 0 16 16">
+                            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                        </svg>
+                    </button>
+                </form>
+                {% endif %}
+
+                <button class="reply-btn" data-post-id="{{ post.id }}">Ответить на сообщение</button>
+                <a class="toggle-replies-btn" data-post-id="{{ post.id }}" style="cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-arrow-down-square" viewBox="0 0 16 16"
+                         style="background-color: black; border: 1px solid white;">
+                        <path fill-rule="evenodd"
+                              d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.5 2.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z"/>
+                    </svg>
+                </a>
+                <div id="reply-form-{{ post.id }}" style="display: none;">
+                    <form action="{% url 'reply_to_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <textarea name="content" cols="50" rows="3" style="font-size: 16px;"></textarea><br>
+                        <input type="hidden" name="replied_to_id" value="{{ post.id }}">
+                        <button type="submit">Поделиться комментарием</button>
+                    </form>
                 </div>
+                <hr>
+                <div id="replies-section-{{ post.id }}" style="display: none;">
+                    <ul>
+                        {% for reply in post.replies.all %}
+                        <li>
+                            <p><strong> </strong> <span style="color: blue; font-weight: bold;">{{ reply.user.username }}</span>
+                                <span style="font-size: 18px;">{{ reply.content }}</span>
+                            <form action="{% url 'like_reply' reply.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="border: none; background: none; padding: 0; color: white;">
+                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"
+                                         style="cursor: pointer;">
+                                        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                                    </svg>
+                                </button>
+                                <span>{{ reply.like_count }}</span>
+                            </form>
+                            <form action="{% url 'dislike_reply' reply.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="border: none; background: none; padding: 0; color: white;">
+                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"
+                                         style="cursor: pointer;">
+                                        <path d="M8.864 15.674c-.956.24-1.843-.484-1.908-1.42-.072-1.05-.23-2.015-.428-2.59-.125-.36-.479-1.012-1.04-1.638-.557-.624-1.282-1.179-2.131-1.41C2.685 8.432 2 7.85 2 7V3c0-.845.682-1.464 1.448-1.546 1.07-.113 1.564-.415 2.068-.723l.048-.029c.272-.166.578-.349.97-.484C6.931.08 7.395 0 8 0h3.5c.937 0 1.599.478 1.934 1.064.164.287.254.607.254.913 0 .152-.023.312-.077.464.201.262.38.577.488.9.11.33.172.762.004 1.15.069.13.12.268.159.403.077.27.113.567.113.856s-.036.586-.113.856c-.035.12-.08.244-.138.363.394.571.418 1.2.234 1.733-.206.592-.682 1.1-1.2 1.272-.847.283-1.803.276-2.516.211a10 10 0 0 1-.443-.05 9.36 9.36 0 0 1-.062 4.51c-.138.508-.55.848-1.012.964zM11.5 1H8c-.51 0-.863.068-1.14.163-.281.097-.506.229-.776.393l-.04.025c-.555.338-1.198.73-2.49.868-.333.035-.554.29-.554.55V7c0 .255.226.543.62.65 1.095.3 1.977.995 2.614 1.707.635.71 1.064 1.475 1.238 1.979.243.7.407 1.768.482 2.85.025.362.36.594.667.518l.262-.065c.16-.04.258-.143.288-.255a8.34 8.34 0 0 0-.145-4.726.5.5 0 0 1 .595-.643h.014a9 9 0 0 0 1.036.157c.663.06 1.457.054 2.11-.163.175-.059.45-.3.57-.65.107-.308.087-.67-.266-1.023L12.146 6l.353-.354c.043-.043.105-.14.154-.314.048-.168.075-.37.075-.582s-.027-.415-.075-.582c-.05-.174-.111-.272-.154-.315L12.5 3.44 12.853 3c.047-.048.109-.177.005-.488a2.2 2.2 0 0 0-.505-.805L11.5 1.7c-.064-.064-.073-.118-.121-.169a.9.9 0 0 0-.416-.121c-.288.006-.56-.165-.928-.55a.674.674 0 0 0-.154-.071z"/>
+                                    </svg>
+                                </button>
+                                <span>{{ reply.dislike_count }}</span>
+                            </form>
+                            {% if user.is_authenticated %}
+                            <form action="{% url 'delete_reply' reply.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="border: none; background: none; padding: 0; color: white;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                         class="bi bi-trash3" viewBox="0 0 16 16">
+                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                                    </svg>
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <p><strong>Время создания: </strong>{{ reply.created_at }}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
             {% endfor %}
         </div>
-    {% endfor %}
+    </div>
+</div>
+<!-- Пагинация -->
+<div class="mt-4 d-flex justify-content-center">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item{% if page_obj.number == num %} active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
 
-    <script>
-        document.querySelectorAll('.like-btn').forEach(button => {
-            button.addEventListener('click', () => {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const replyButtons = document.querySelectorAll('.reply-btn');
+        const toggleRepliesButtons = document.querySelectorAll('.toggle-replies-btn');
+
+        replyButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
                 const postId = button.dataset.postId;
-                fetch(`/like/${postId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById(`like-count-${postId}`).innerText = `Likes: ${data.like_count}`;
-                        document.getElementById(`dislike-count-${postId}`).innerText = `Dislikes: ${data.dislike_count}`;
-                    });
+                const replyForm = document.getElementById(`reply-form-${postId}`);
+                if (replyForm.style.display === 'none' || replyForm.style.display === '') {
+                    replyForm.style.display = 'block';
+                } else {
+                    replyForm.style.display = 'none';
+                }
             });
         });
 
-        document.querySelectorAll('.dislike-btn').forEach(button => {
-            button.addEventListener('click', () => {
+        toggleRepliesButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
                 const postId = button.dataset.postId;
-                fetch(`/dislike/${postId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById(`dislike-count-${postId}`).innerText = `Dislikes: ${data.dislike_count}`;
-                        document.getElementById(`like-count-${postId}`).innerText = `Likes: ${data.like_count}`;
-                    });
+                const repliesSection = document.getElementById(`replies-section-${postId}`);
+                if (repliesSection.style.display === 'none' || repliesSection.style.display === '') {
+                    repliesSection.style.display = 'block';
+                    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-square-fill" viewBox="0 0 16 16" style="background-color: violet; border: 1px solid white;"><path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.5 9.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"/></svg>';
+                } else {
+                    repliesSection.style.display = 'none';
+                    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-square" viewBox="0 0 16 16" style="background-color: black; border: 1px solid white;"><path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.5 2.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z"/></svg>';
+                }
             });
         });
-    </script>
-{% endblock %}
+    });
+
+
+
+</script>
+{% endblock content %}

@@ -3,18 +3,33 @@
 {% block content %}
 <h2>Избранное</h2>
 {% if favorites %}
-    {% for favorite in favorites %}
-        <div class="product-card" >
-            <img src="{{ favorite.photo.url }}" class="card-img-top" alt="{{ favorite.name }}">
-            <p><strong>Название:</strong> {{ favorite.name }}</p>
-            <p><strong>Цена:</strong> {{ favorite.price }}</p>
-            <p><strong>Описание:</strong> {{ favorite.description }}</p>
-            <form action="{% url 'remove_from_favorites' favorite.id %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Удалить из избранного</button>
-            </form>
-        </div>
-    {% endfor %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for favorite in favorites %}
+            <div class="col">
+                <div class="card" style="width: 18rem; background: #6d67a1;">
+                    {% if favorite.photo %}
+                        <img src="{{ favorite.photo.url }}" class="card-img-top" alt="{{ favorite.name }}">
+                    {% else %}
+                        <img src="https://cotton-store.ru/wa-data/public/shop/themes/profitbuy/img/nofoto.jpg" class="card-img-top" alt="{{ favorite.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <a class="card-title" href="{% url 'product_detail' favorite.id %}" style="color: white;">{{ favorite.name }}</a>
+                        <p class="card-text" style="color: white;">${{ favorite.price }}</p>
+                        <p class="card-text" style="color: white;">{{ favorite.description }}</p>
+                        <form action="{% url 'add_to_cart' favorite.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">Добавить в корзину</button>
+                        </form>
+                        <a type="button" class="btn btn-outline-info" href="{% url 'product_detail' favorite.id %}">Подробнее</a>
+                        <form action="{% url 'remove_from_favorites' favorite.id %}" method="post" style="margin-top: 10px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Удалить из избранного</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
     <p>В вашем избранном нет продуктов</p>
 {% endif %}
